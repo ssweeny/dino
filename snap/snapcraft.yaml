@@ -1,0 +1,69 @@
+name: dino
+version: '0.1-git'
+summary: Modern Jabber/XMPP Client using GTK+/Vala 
+description: Modern Jabber/XMPP Client using GTK+/Vala
+
+grade: devel # must be 'stable' to release into candidate/stable channels
+confinement: strict
+
+apps:
+    dino:
+        command: desktop-launch dino
+        plugs: [home, x11, unity7, network, gnome-3-24-platform]
+
+slots:
+    dbus-dino:
+        interface: dbus
+        bus: session
+        name: im.dino
+
+plugs:
+    gnome-3-24-platform:
+        interface: content
+        target: gnome-platform
+        default-provider: gnome-3-24:gnome-3-24-platform
+parts:
+    gnome-platform:
+        plugin: nil
+        prepare: |
+            echo "deb http://ppa.launchpad.net/ubuntu-desktop/gnome-3-24/ubuntu xenial main" | tee /etc/apt/sources.list.d/gnome-3-24.list
+            apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys 399B698EEA9EF163B6F9A0F62CC98497A1231595
+            apt update
+            apt upgrade -yy
+    dino:
+        source: .
+        plugin: autotools
+        configflags:
+            - --prefix=/snap/dino/current/usr
+        organize:
+            snap/dino/current/usr: usr
+        build-attributes:
+            - no-system-libraries
+        build-packages:
+            - build-essential
+            - cmake
+            - libsoup2.4-dev
+            - libgcrypt20-dev
+            - libgpgme11-dev
+            - libnotify-dev
+            - libsqlite3-dev
+            - libgee-0.8-dev
+            - valac
+        stage-packages:
+            - libsoup2.4-1
+            - libgcrypt20
+            - libgpgme11
+            - libnotify4
+            - libsqlite3-0
+            - libgee-0.8-2
+        prime:
+            - -usr/lib/x86_64-linux-gnu/gdk-pixbuf-2.0
+            - -usr/lib/x86_64-linux-gnu/glib-2.0
+            - -usr/share/doc
+            - -usr/share/glib-2.0
+            - -usr/share/lintian
+            - -usr/share/pkgconfig
+            - -usr/share/mime
+        after: 
+            - desktop-gnome-platform
+            - gnome-platform
